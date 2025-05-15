@@ -1,0 +1,38 @@
+name: Update Risk Index
+
+on:
+  schedule:
+    - cron: '0 * * * *'   # spustí sa každú hodinu
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write  # ⬅️ Toto je DÔLEŽITÉ, aby git push fungoval!
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install fredapi plotly pandas
+
+      - name: Run script
+        run: |
+          python generate_html.py
+
+      - name: Commit and push updated HTML
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add risk_index.html
+          git commit -m "Automatická aktualizácia risk_index.html" || echo "No changes to commit"
+          git push

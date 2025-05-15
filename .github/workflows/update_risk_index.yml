@@ -1,0 +1,39 @@
+name: Update Risk Index
+
+on:
+  schedule:
+    - cron: '0 * * * *'   # spustí sa každú hodinu na začiatku hodiny
+  workflow_dispatch:      # umožní manuálne spustenie workflow
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install fredapi plotly pandas
+
+    - name: Run script
+      run: |
+        python generate_html.py
+
+    - name: Commit and push updated HTML
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add risk_index.html
+        git commit -m "Automatická aktualizácia risk_index.html"
+        git push
+      env:
+        # Ak máš nastavený GitHub token (odporúčam), použije sa tu na push
+        # GITHUB_TOKEN je prednastavený v GitHub Actions
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
